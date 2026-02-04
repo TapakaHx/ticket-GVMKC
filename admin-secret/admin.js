@@ -9,6 +9,8 @@ const passwordOverlay = document.getElementById("password-overlay");
 const passwordForm = document.getElementById("password-form");
 const passwordError = document.getElementById("password-error");
 const soundToggle = document.getElementById("sound-toggle");
+const editorDrawer = document.getElementById("editor-drawer");
+const closeEditorButton = document.getElementById("close-editor");
 
 let lastTicketCount = 0;
 let soundEnabled = false;
@@ -18,6 +20,8 @@ const getTickets = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 const saveTickets = (tickets) => localStorage.setItem(STORAGE_KEY, JSON.stringify(tickets));
 
 const formatStatus = (status) => (status === "in progress" ? "in progress" : status);
+const formatDateTime = (value) =>
+  new Date(value).toLocaleString("uk-UA", { timeZone: "Europe/Kyiv" });
 
 const renderTicketList = (tickets) => {
   if (tickets.length === 0) {
@@ -27,14 +31,25 @@ const renderTicketList = (tickets) => {
   ticketList.innerHTML = tickets
     .map(
       (ticket) => `
-      <button class="ticket-card" type="button" data-id="${ticket.id}">
+      <div class="ticket-card" data-id="${ticket.id}">
         <h3>№${ticket.queueNumber} · ${ticket.fullName}</h3>
         <div class="ticket-meta">
           <span>Статус: ${formatStatus(ticket.status)}</span>
           <span>Категорія: ${ticket.category}</span>
         </div>
+        <div class="ticket-meta">
+          <span>Подача: ${formatDateTime(ticket.submissionDate)}</span>
+        </div>
         <p>${ticket.description}</p>
-      </button>
+        <div class="ticket-actions">
+          <button class="secondary" type="button" data-action="edit" data-id="${ticket.id}">
+            Редагувати
+          </button>
+          <button class="secondary" type="button" data-action="delete" data-id="${ticket.id}">
+            Видалити
+          </button>
+        </div>
+      </div>
     `
     )
     .join("");
@@ -48,7 +63,6 @@ const populateForm = (ticket) => {
   editForm.description.value = ticket.description;
   editForm.status.value = ticket.status;
   editForm.executor.value = ticket.executor || "";
-  editForm.completionDate.value = ticket.completionDate ? ticket.completionDate.slice(0, 10) : "";
   toggleDoneFields(ticket.status);
 };
 
@@ -58,7 +72,6 @@ const toggleDoneFields = (status) => {
   } else {
     doneFields.hidden = true;
     editForm.executor.value = "";
-    editForm.completionDate.value = "";
   }
 };
 
@@ -85,15 +98,15 @@ const playBeep = () => {
   }
   const oscillator = audioContext.createOscillator();
   const gain = audioContext.createGain();
-  oscillator.type = "sine";
-  oscillator.frequency.value = 880;
-  gain.gain.value = 0.15;
+  oscillator.type = "triangle";
+  oscillator.frequency.value = 620;
+  gain.gain.value = 0.08;
   oscillator.connect(gain);
   gain.connect(audioContext.destination);
   oscillator.start();
   setTimeout(() => {
     oscillator.stop();
-  }, 200);
+  }, 260);
 };
 
 const pollTickets = () => {
@@ -138,8 +151,8 @@ editForm.addEventListener("submit", (event) => {
   if (index === -1) return;
 
   if (data.status === "done") {
-    if (!data.executor || !data.completionDate) {
-      alert("Для завершення потрібні виконавець і дата завершення.");
+    if (!data.executor) {
+      alert("Для завершення потрібен виконавець.");
       return;
     }
   }
@@ -152,29 +165,52 @@ editForm.addEventListener("submit", (event) => {
     description: data.description,
     status: data.status,
     executor: data.status === "done" ? data.executor : null,
-    completionDate: data.status === "done" ? new Date(data.completionDate).toISOString() : null,
+    completionDate:
+      data.status === "done" ? tickets[index].completionDate || new Date().toISOString() : null,
   };
 
   saveTickets(tickets);
   renderTicketList(tickets);
-  populateForm(tickets[index]);
+  hideEditor();
 });
 
+const showEditor = () => {
+  editorDrawer.hidden = false;
+};
+
+const hideEditor = () => {
+  editorDrawer.hidden = true;
+};
+
 ticketList.addEventListener("click", (event) => {
-  const target = event.target.closest(".ticket-card");
-  if (!target) return;
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) return;
+  const action = target.dataset.action;
   const id = target.dataset.id;
-  const ticket = getTickets().find((item) => item.id === id);
-  if (ticket) {
+  if (!action || !id) return;
+  const tickets = getTickets();
+  const ticket = tickets.find((item) => item.id === id);
+  if (!ticket) return;
+  if (action === "edit") {
     populateForm(ticket);
+    showEditor();
+    return;
+  }
+  if (action === "delete") {
+    const confirmed = window.confirm("Видалити цю заявку?");
+    if (!confirmed) return;
+    const updated = tickets.filter((item) => item.id !== id);
+    saveTickets(updated);
+    renderTicketList(updated);
   }
 });
+
+if (closeEditorButton) {
+  closeEditorButton.addEventListener("click", hideEditor);
+}
 
 ensureAuth();
 const initialTickets = getTickets();
 lastTicketCount = initialTickets.length;
 renderTicketList(initialTickets);
-if (initialTickets[0]) {
-  populateForm(initialTickets[0]);
-}
 setInterval(pollTickets, 4000);

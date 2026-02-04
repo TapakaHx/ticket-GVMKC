@@ -3,6 +3,10 @@ const confirmation = document.getElementById("confirmation");
 const tokenForm = document.getElementById("token-form");
 const ticketDetails = document.getElementById("ticket-details");
 const adminLoginButton = document.getElementById("admin-login");
+const submitPanel = document.getElementById("submit-panel");
+const lookupPanel = document.getElementById("lookup-panel");
+const openSubmitButton = document.getElementById("open-submit");
+const openLookupButton = document.getElementById("open-lookup");
 
 const STORAGE_KEY = "greensupport.tickets";
 const QUEUE_KEY = "greensupport.queue";
@@ -18,7 +22,8 @@ const getNextQueueNumber = () => {
   return next;
 };
 
-const formatDate = (value) => new Date(value).toLocaleString("uk-UA");
+const formatDate = (value) =>
+  new Date(value).toLocaleString("uk-UA", { timeZone: "Europe/Kyiv" });
 
 const createTicket = (data) => ({
   id: crypto.randomUUID(),
@@ -76,13 +81,6 @@ const renderTicketDetails = (ticket) => {
           : ""
       }
     </div>
-    <div class="ticket-actions">
-      ${
-        ticket.status === "queue"
-          ? `<button class="secondary" data-action="delete" data-id="${ticket.id}">Видалити</button>`
-          : ""
-      }
-    </div>
   `;
 };
 
@@ -118,21 +116,6 @@ tokenForm.addEventListener("submit", (event) => {
   renderTicketDetails(ticket);
 });
 
-ticketDetails.addEventListener("click", (event) => {
-  const target = event.target;
-  if (!(target instanceof HTMLElement)) return;
-  if (target.dataset.action === "delete") {
-    const id = target.dataset.id;
-    const tickets = getTickets();
-    const ticket = tickets.find((item) => item.id === id);
-    if (!ticket || ticket.status !== "queue") return;
-    const updated = tickets.filter((item) => item.id !== id);
-    saveTickets(updated);
-    ticketDetails.hidden = true;
-    alert("Заявку видалено.");
-  }
-});
-
 if (adminLoginButton) {
   adminLoginButton.addEventListener("click", () => {
     const password = prompt("Введіть пароль адміністратора");
@@ -144,4 +127,17 @@ if (adminLoginButton) {
       alert("Невірний пароль.");
     }
   });
+}
+
+const showPanel = (panelToShow) => {
+  if (submitPanel) submitPanel.hidden = panelToShow !== "submit";
+  if (lookupPanel) lookupPanel.hidden = panelToShow !== "lookup";
+};
+
+if (openSubmitButton) {
+  openSubmitButton.addEventListener("click", () => showPanel("submit"));
+}
+
+if (openLookupButton) {
+  openLookupButton.addEventListener("click", () => showPanel("lookup"));
 }

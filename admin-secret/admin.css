@@ -1,5 +1,5 @@
 body {
-  background: #f0faf5;
+  background: #f6f1e9;
 }
 
 .admin-shell {
@@ -27,19 +27,24 @@ body {
   gap: 28px;
 }
 
+.full-width {
+  grid-column: 1 / -1;
+}
+
 .ticket-list {
   display: grid;
   gap: 16px;
 }
 
 .ticket-card {
-  background: #ffffff;
+  background: #fffaf2;
   border-radius: 18px;
   padding: 18px;
   box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
   border: 1px solid #e2e8f0;
   display: grid;
   gap: 10px;
+  text-align: left;
 }
 
 .ticket-card h3 {
@@ -54,6 +59,40 @@ body {
   color: #475569;
 }
 
+.ticket-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.editor-drawer {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.editor-card {
+  background: #fffaf2;
+  padding: 28px;
+  border-radius: 20px;
+  max-width: 640px;
+  width: 100%;
+  display: grid;
+  gap: 16px;
+  box-shadow: 0 24px 50px rgba(15, 23, 42, 0.2);
+}
+
+.editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .password-overlay {
   position: fixed;
   inset: 0;
@@ -65,7 +104,7 @@ body {
 }
 
 .password-card {
-  background: #ffffff;
+  background: #fffaf2;
   padding: 30px;
   border-radius: 20px;
   max-width: 420px;
@@ -86,7 +125,7 @@ body {
 }
 
 .done-fields {
-  background: #f8fafc;
+  background: #f3e8d8;
   padding: 14px;
   border-radius: 14px;
   border: 1px dashed #cbd5f5;

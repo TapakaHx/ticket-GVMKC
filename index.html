@@ -13,86 +13,69 @@
     />
   </head>
   <body>
-    <header class="hero">
+    <header class="hero minimal-hero">
       <nav class="nav">
-        <div class="brand">Технічна підтримка ГВМКЦ ДПСУ</div>
         <button class="admin-link" id="admin-login" type="button">Адмін-панель</button>
       </nav>
-      <div class="hero-content">
-        <div>
-          <p class="eyebrow">Безкоштовне звернення без авторизації</p>
-          <h1>Подайте заявку та слідкуйте за нею.</h1>
-          <p class="lead">
-            Подайте заявку, отримайте номер черги та керуйте своїм запитом без логіну.
-            Видалення можливе лише поки заявка в черзі.
-          </p>
-        </div>
-        <div class="hero-card">
-          <h2>Надіслати заявку</h2>
-          <form id="ticket-form" class="ticket-form">
-            <label>
-              Повне імʼя
-              <input name="fullName" type="text" required placeholder="Імʼя та прізвище" />
-            </label>
-            <label>
-              Службовий номер
-              <input name="serviceNumber" type="text" required placeholder="(77-22)" />
-            </label>
-            <label>
-              Категорія
-              <select name="category" required>
-                <option value="" disabled selected>Оберіть категорію</option>
-                <option>ARM</option>
-                <option>Printer</option>
-                <option>WiFi</option>
-                <option>Medical devices</option>
-                <option>Phone</option>
-              </select>
-            </label>
-            <label>
-              Опис проблеми
-              <textarea
-                name="description"
-                rows="4"
-                required
-                placeholder="Опишіть проблему максимально детально"
-              ></textarea>
-            </label>
-            <button type="submit" class="primary">Відправити</button>
-          </form>
-          <div id="confirmation" class="confirmation" hidden></div>
+      <div class="hero-content single-column">
+        <h1 class="main-title">Сайт подачі заявок до технічної підтримки ГВМКЦ ДПСУ</h1>
+        <div class="hero-actions">
+          <button class="primary" id="open-submit" type="button">Подати заявку</button>
+          <button class="secondary" id="open-lookup" type="button">Переглянути заявки</button>
         </div>
       </div>
     </header>
 
     <main class="main">
-      <section class="info-cards">
-        <article>
-          <h3>Номер черги</h3>
-          <p>Система автоматично присвоює номер черги та фіксує дату подачі.</p>
-        </article>
-        <article>
-          <h3>Контроль без логіну</h3>
-          <p>Керуйте власною заявкою через номер черги.</p>
-        </article>
-        <article>
-          <h3>Прозорий статус</h3>
-          <p>Поточний статус та історія доступні в деталях заявки.</p>
-        </article>
+      <section id="submit-panel" class="panel" hidden>
+        <h2>Надіслати заявку</h2>
+        <form id="ticket-form" class="ticket-form">
+          <label>
+            Повне імʼя
+            <input name="fullName" type="text" required placeholder="Імʼя та прізвище" />
+          </label>
+          <label>
+            Службовий номер
+            <input
+              name="serviceNumber"
+              type="text"
+              required
+              placeholder="Ваш службовий номер у форматі 77-22"
+            />
+          </label>
+          <label>
+            Категорія
+            <select name="category" required>
+              <option value="" disabled selected>Оберіть категорію</option>
+              <option>ARM</option>
+              <option>Printer</option>
+              <option>WiFi</option>
+              <option>Medical devices</option>
+              <option>Phone</option>
+            </select>
+          </label>
+          <label>
+            Опис проблеми
+            <textarea
+              name="description"
+              rows="4"
+              required
+              placeholder="Опишіть проблему максимально детально"
+            ></textarea>
+          </label>
+          <button type="submit" class="primary">Відправити</button>
+        </form>
+        <div id="confirmation" class="confirmation" hidden></div>
       </section>
 
-      <section class="token-panel">
-        <div>
-          <h2>Моя заявка</h2>
-          <p>Введіть номер черги, щоб переглянути або видалити заявку, поки вона в черзі.</p>
-        </div>
+      <section id="lookup-panel" class="panel" hidden>
+        <h2>Моя заявка</h2>
         <form id="token-form" class="token-form">
           <input name="queueNumber" type="text" placeholder="Номер черги" required />
           <button type="submit" class="secondary">Переглянути</button>
         </form>
+        <section id="ticket-details" class="ticket-details" hidden></section>
       </section>
-
-      <section id="ticket-details" class="ticket-details" hidden></section>
     </main>
 
     <footer class="footer">

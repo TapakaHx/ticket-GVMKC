@@ -1,6 +1,6 @@
 const STORAGE_KEY = "greensupport.tickets";
 const PASSWORD_KEY = "greensupport.admin.auth";
-const ADMIN_PASSWORD = "support2024";
+const ADMIN_PASSWORD = "X123456x";
 
 const ticketList = document.getElementById("ticket-list");
 const editForm = document.getElementById("edit-form");

@@ -2,9 +2,12 @@ const ticketForm = document.getElementById("ticket-form");
 const confirmation = document.getElementById("confirmation");
 const tokenForm = document.getElementById("token-form");
 const ticketDetails = document.getElementById("ticket-details");
+const adminLoginButton = document.getElementById("admin-login");
 
 const STORAGE_KEY = "greensupport.tickets";
 const QUEUE_KEY = "greensupport.queue";
+const PASSWORD_KEY = "greensupport.admin.auth";
+const ADMIN_PASSWORD = "X123456x";
 
 const getTickets = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 const saveTickets = (tickets) => localStorage.setItem(STORAGE_KEY, JSON.stringify(tickets));
@@ -129,3 +132,16 @@ ticketDetails.addEventListener("click", (event) => {
     alert("Заявку видалено.");
   }
 });
+
+if (adminLoginButton) {
+  adminLoginButton.addEventListener("click", () => {
+    const password = prompt("Введіть пароль адміністратора");
+    if (!password) return;
+    if (password === ADMIN_PASSWORD) {
+      sessionStorage.setItem(PASSWORD_KEY, "true");
+      window.location.href = "/admin-secret/";
+    } else {
+      alert("Невірний пароль.");
+    }
+  });
+}

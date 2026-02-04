@@ -19,7 +19,6 @@ const formatDate = (value) => new Date(value).toLocaleString("uk-UA");
 
 const createTicket = (data) => ({
   id: crypto.randomUUID(),
-  token: crypto.randomUUID().split("-")[0].toUpperCase(),
   queueNumber: getNextQueueNumber(),
   status: "queue",
   submissionDate: new Date().toISOString(),
@@ -33,7 +32,7 @@ const renderConfirmation = (ticket) => {
   confirmation.innerHTML = `
     <strong>Заявку прийнято!</strong><br />
     Ваш номер черги: <strong>${ticket.queueNumber}</strong><br />
-    Токен для керування заявкою: <strong>${ticket.token}</strong>
+    Використовуйте номер черги для керування заявкою.
   `;
 };
 
@@ -88,7 +87,7 @@ const showTicketNotFound = () => {
   ticketDetails.hidden = false;
   ticketDetails.innerHTML = `
     <header><h3>Заявку не знайдено</h3></header>
-    <p>Перевірте токен або зверніться до адміністратора.</p>
+    <p>Перевірте номер черги або зверніться до адміністратора.</p>
   `;
 };
 
@@ -106,9 +105,9 @@ ticketForm.addEventListener("submit", (event) => {
 
 tokenForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  const token = new FormData(tokenForm).get("token").trim().toUpperCase();
+  const queueNumber = new FormData(tokenForm).get("queueNumber").trim();
   const tickets = getTickets();
-  const ticket = tickets.find((item) => item.token === token);
+  const ticket = tickets.find((item) => String(item.queueNumber) === queueNumber);
   if (!ticket) {
     showTicketNotFound();
     return;

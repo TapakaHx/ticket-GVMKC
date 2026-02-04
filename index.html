@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Підтримка | Зелено-білий сервіс</title>
+    <title>Підтримка | Технічна підтримка ГВМКЦ</title>
     <link rel="stylesheet" href="styles.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,15 +15,15 @@
   <body>
     <header class="hero">
       <nav class="nav">
-        <div class="brand">GreenSupport</div>
+        <div class="brand">Технічна підтримка ГВМКЦ ДПСУ</div>
         <a class="admin-link" href="/admin-secret/">Адмін-панель</a>
       </nav>
       <div class="hero-content">
         <div>
           <p class="eyebrow">Безкоштовне звернення без авторизації</p>
-          <h1>Сучасна підтримка з прозорою чергою</h1>
+          <h1>Подайте заявку та слідкуйте за нею.</h1>
           <p class="lead">
-            Подайте заявку, отримайте номер черги та токен для керування вашим запитом.
+            Подайте заявку, отримайте номер черги та керуйте своїм запитом без логіну.
             Видалення можливе лише поки заявка в черзі.
           </p>
         </div>
@@ -36,7 +36,7 @@
             </label>
             <label>
               Службовий номер
-              <input name="serviceNumber" type="text" required placeholder="SN-001" />
+              <input name="serviceNumber" type="text" required placeholder="(77-22)" />
             </label>
             <label>
               Категорія
@@ -73,7 +73,7 @@
         </article>
         <article>
           <h3>Контроль без логіну</h3>
-          <p>Керуйте власною заявкою через персональний токен.</p>
+          <p>Керуйте власною заявкою через номер черги.</p>
         </article>
         <article>
           <h3>Прозорий статус</h3>
@@ -84,10 +84,10 @@
       <section class="token-panel">
         <div>
           <h2>Моя заявка</h2>
-          <p>Введіть токен, щоб переглянути або видалити заявку, поки вона в черзі.</p>
+          <p>Введіть номер черги, щоб переглянути або видалити заявку, поки вона в черзі.</p>
         </div>
         <form id="token-form" class="token-form">
-          <input name="token" type="text" placeholder="Токен заявки" required />
+          <input name="queueNumber" type="text" placeholder="Номер черги" required />
           <button type="submit" class="secondary">Переглянути</button>
         </form>
       </section>
@@ -96,7 +96,7 @@
     </main>
 
     <footer class="footer">
-      <p>GreenSupport · 24/7 підтримка обладнання</p>
+      <p>Технічна підтримка ГВМКЦ ДПСУ · 24/7 підтримка обладнання</p>
     </footer>
 
     <script src="app.js"></script>

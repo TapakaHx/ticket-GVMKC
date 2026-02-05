@@ -25,6 +25,25 @@ const getNextQueueNumber = () => {
 const formatDate = (value) =>
   new Date(value).toLocaleString("uk-UA", { timeZone: "Europe/Kyiv" });
 
+const getRequesterInfo = async () => {
+  let requesterIp = "Невідомо";
+
+  try {
+    const response = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+    if (response.ok) {
+      const payload = await response.json();
+      requesterIp = payload.ip || requesterIp;
+    }
+  } catch {
+    // Ignore network issues; keep fallback value.
+  }
+
+  const requesterHost = window.location.hostname || "Невідомо";
+  const requesterDevice = navigator.userAgentData?.platform || navigator.platform || "Невідомо";
+
+  return { requesterIp, requesterHost, requesterDevice };
+};
+
 const createTicket = (data) => ({
   id: crypto.randomUUID(),
   queueNumber: getNextQueueNumber(),
@@ -32,6 +51,7 @@ const createTicket = (data) => ({
   submissionDate: new Date().toISOString(),
   completionDate: null,
   executor: null,
+  isOverdue: false,
   ...data,
 });
 
@@ -92,11 +112,12 @@ const showTicketNotFound = () => {
   `;
 };
 
-ticketForm.addEventListener("submit", (event) => {
+ticketForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const formData = new FormData(ticketForm);
   const data = Object.fromEntries(formData.entries());
-  const ticket = createTicket(data);
+  const requesterInfo = await getRequesterInfo();
+  const ticket = createTicket({ ...data, ...requesterInfo });
   const tickets = getTickets();
   tickets.push(ticket);
   saveTickets(tickets);
@@ -122,7 +143,7 @@ if (adminLoginButton) {
     if (!password) return;
     if (password === ADMIN_PASSWORD) {
       sessionStorage.setItem(PASSWORD_KEY, "true");
-      window.location.href = "/admin-secret/";
+      window.location.href = "./admin-secret/";
     } else {
       alert("Невірний пароль.");
     }

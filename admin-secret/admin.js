@@ -1,6 +1,7 @@
 const STORAGE_KEY = "greensupport.tickets";
 const PASSWORD_KEY = "greensupport.admin.auth";
 const ADMIN_PASSWORD = "X123456x";
+const OVERDUE_MS = 2 * 24 * 60 * 60 * 1000;
 
 const ticketList = document.getElementById("ticket-list");
 const editForm = document.getElementById("edit-form");
@@ -19,26 +20,71 @@ let audioContext;
 const getTickets = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 const saveTickets = (tickets) => localStorage.setItem(STORAGE_KEY, JSON.stringify(tickets));
 
-const formatStatus = (status) => status;
 const formatDateTime = (value) =>
   new Date(value).toLocaleString("uk-UA", { timeZone: "Europe/Kyiv" });
+
+const applyQueueRules = (tickets) => {
+  const now = Date.now();
+  let changed = false;
+
+  const normalized = tickets.map((ticket) => {
+    const isPending = ticket.status !== "виконано";
+    const isOverdue = isPending && now - new Date(ticket.submissionDate).getTime() > OVERDUE_MS;
+
+    if (ticket.isOverdue !== isOverdue) {
+      changed = true;
+    }
+
+    return {
+      ...ticket,
+      isOverdue,
+    };
+  });
+
+  const sorted = [...normalized].sort((a, b) => {
+    if (a.isOverdue && !b.isOverdue) return -1;
+    if (!a.isOverdue && b.isOverdue) return 1;
+    return a.queueNumber - b.queueNumber;
+  });
+
+  if (
+    !changed &&
+    sorted.length === tickets.length &&
+    sorted.every((item, index) => item.id === tickets[index]?.id)
+  ) {
+    return tickets;
+  }
+
+  return sorted;
+};
+
+const syncTickets = () => {
+  const current = getTickets();
+  const updated = applyQueueRules(current);
+  if (JSON.stringify(current) !== JSON.stringify(updated)) {
+    saveTickets(updated);
+  }
+  return updated;
+};
 
 const renderTicketList = (tickets) => {
   if (tickets.length === 0) {
     ticketList.innerHTML = "<p>Наразі заявок немає.</p>";
     return;
   }
+
   ticketList.innerHTML = tickets
     .map(
       (ticket) => `
-      <div class="ticket-card" data-id="${ticket.id}">
+      <div class="ticket-card ${ticket.isOverdue ? "overdue" : ""}" data-id="${ticket.id}">
         <h3>№${ticket.queueNumber} · ${ticket.fullName}</h3>
         <div class="ticket-meta">
-          <span>Статус заявки: ${formatStatus(ticket.status)}</span>
+          <span>Статус заявки: ${ticket.status}</span>
           <span>Категорія проблеми: ${ticket.category}</span>
         </div>
         <div class="ticket-meta">
           <span>Подача: ${formatDateTime(ticket.submissionDate)}</span>
+          ${ticket.isOverdue ? '<span class="overdue-badge">Пріоритет: 2+ дні</span>' : ""}
         </div>
         <p>${ticket.description}</p>
         <div class="ticket-actions">
@@ -63,6 +109,9 @@ const populateForm = (ticket) => {
   editForm.description.value = ticket.description;
   editForm.status.value = ticket.status;
   editForm.executor.value = ticket.executor || "";
+  editForm.requesterIp.value = ticket.requesterIp || "Невідомо";
+  editForm.requesterHost.value = ticket.requesterHost || "Невідомо";
+  editForm.requesterDevice.value = ticket.requesterDevice || "Невідомо";
   toggleDoneFields(ticket.status);
 };
 
@@ -104,13 +153,11 @@ const playBeep = () => {
   oscillator.connect(gain);
   gain.connect(audioContext.destination);
   oscillator.start();
-  setTimeout(() => {
-    oscillator.stop();
-  }, 260);
+  setTimeout(() => oscillator.stop(), 260);
 };
 
 const pollTickets = () => {
-  const tickets = getTickets();
+  const tickets = syncTickets();
   renderTicketList(tickets);
   if (tickets.length > lastTicketCount) {
     playBeep();
@@ -133,9 +180,7 @@ passwordForm.addEventListener("submit", (event) => {
 soundToggle.addEventListener("click", () => {
   soundEnabled = !soundEnabled;
   soundToggle.textContent = soundEnabled ? "Вимкнути звук" : "Увімкнути звук";
-  if (soundEnabled) {
-    playBeep();
-  }
+  if (soundEnabled) playBeep();
 });
 
 editForm.status.addEventListener("change", (event) => {
@@ -146,15 +191,13 @@ editForm.addEventListener("submit", (event) => {
   event.preventDefault();
   const formData = new FormData(editForm);
   const data = Object.fromEntries(formData.entries());
-  const tickets = getTickets();
+  const tickets = syncTickets();
   const index = tickets.findIndex((ticket) => ticket.id === data.id);
   if (index === -1) return;
 
-  if (data.status === "виконано") {
-    if (!data.executor) {
-      alert("Для завершення потрібен виконавець.");
-      return;
-    }
+  if (data.status === "виконано" && !data.executor) {
+    alert("Для завершення потрібен виконавець.");
+    return;
   }
 
   tickets[index] = {
@@ -167,10 +210,12 @@ editForm.addEventListener("submit", (event) => {
     executor: data.status === "виконано" ? data.executor : null,
     completionDate:
       data.status === "виконано" ? tickets[index].completionDate || new Date().toISOString() : null,
+    isOverdue: false,
   };
 
-  saveTickets(tickets);
-  renderTicketList(tickets);
+  const updated = applyQueueRules(tickets);
+  saveTickets(updated);
+  renderTicketList(updated);
   hideEditor();
 });
 
@@ -185,17 +230,21 @@ const hideEditor = () => {
 ticketList.addEventListener("click", (event) => {
   const target = event.target;
   if (!(target instanceof HTMLElement)) return;
+
   const action = target.dataset.action;
   const id = target.dataset.id;
   if (!action || !id) return;
-  const tickets = getTickets();
+
+  const tickets = syncTickets();
   const ticket = tickets.find((item) => item.id === id);
   if (!ticket) return;
+
   if (action === "edit") {
     populateForm(ticket);
     showEditor();
     return;
   }
+
   if (action === "delete") {
     const confirmed = window.confirm("Видалити цю заявку?");
     if (!confirmed) return;
@@ -210,7 +259,8 @@ if (closeEditorButton) {
 }
 
 ensureAuth();
-const initialTickets = getTickets();
+const initialTickets = syncTickets();
 lastTicketCount = initialTickets.length;
 renderTicketList(initialTickets);
+hideEditor();
 setInterval(pollTickets, 4000);

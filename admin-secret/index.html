@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Адмін-панель | Технічна підтримка ГВМКЦ</title>
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+  <body>
+    <div class="admin-shell">
+      <header class="admin-header">
+        <div>
+          <p class="eyebrow">Адмін-панель</p>
+          <h1>Керування чергою заявок</h1>
+        </div>
+        <div class="admin-actions">
+          <button id="sound-toggle" class="secondary">Увімкнути звук</button>
+          <a class="secondary" href="/">На головну</a>
+        </div>
+      </header>
+
+      <section class="admin-grid">
+        <div class="admin-list full-width">
+          <h2>Список заявок</h2>
+          <div id="ticket-list" class="ticket-list"></div>
+        </div>
+      </section>
+    </div>
+
+    <div id="editor-drawer" class="editor-drawer" hidden>
+      <div class="editor-card">
+        <div class="editor-header">
+          <h2>Редагування заявки</h2>
+          <button id="close-editor" class="secondary" type="button">Закрити</button>
+        </div>
+        <form id="edit-form" class="ticket-form">
+          <input type="hidden" name="id" />
+          <label>
+            Повне імʼя
+            <input name="fullName" type="text" required />
+          </label>
+          <label>
+            Службовий номер
+            <input name="serviceNumber" type="text" required />
+          </label>
+          <label>
+            Категорія
+            <select name="category" required>
+              <option>Компʼютери та ноутбуки</option>
+              <option>Принтери та МФУ</option>
+              <option>Мережа та Wi‑Fi</option>
+              <option>Медичне обладнання</option>
+              <option>Телефонія</option>
+            </select>
+          </label>
+          <label>
+            Опис
+            <textarea name="description" rows="4" required></textarea>
+          </label>
+          <div class="meta-info">
+            <label>
+              IP заявника
+              <input name="requesterIp" type="text" readonly />
+            </label>
+            <label>
+              Імʼя компʼютера / домен
+              <input name="requesterHost" type="text" readonly />
+            </label>
+            <label>
+              Пристрій
+              <input name="requesterDevice" type="text" readonly />
+            </label>
+          </div>
+          <label>
+            Статус заявки
+            <select name="status" required>
+              <option value="в черзі">в черзі</option>
+              <option value="в роботі">в роботі</option>
+              <option value="виконано">виконано</option>
+            </select>
+          </label>
+          <div class="done-fields" id="done-fields" hidden>
+            <label>
+              Виконавець
+              <select name="executor">
+                <option value="" disabled selected>Оберіть виконавця</option>
+                <option>Кабанець Володимир</option>
+                <option>Чопов Володимир</option>
+                <option>Пащенко Андрій</option>
+                <option>Ткаченко Павло</option>
+                <option>Ольховий Василь</option>
+              </select>
+            </label>
+          </div>
+          <button type="submit" class="primary">Зберегти</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="password-overlay" class="password-overlay">
+      <div class="password-card">
+        <h2>Доступ до адмін-панелі</h2>
+        <p>Введіть пароль для перегляду заявок.</p>
+        <form id="password-form">
+          <input type="password" name="password" placeholder="Пароль" required />
+          <button type="submit" class="primary">Підтвердити</button>
+        </form>
+        <p id="password-error" class="password-error" hidden>Невірний пароль.</p>
+      </div>
+    </div>
+
+    <script src="admin.js"></script>
+  </body>
+</html>

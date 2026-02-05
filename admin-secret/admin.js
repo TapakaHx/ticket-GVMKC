@@ -204,6 +204,7 @@ const computeStats = (tickets, period) => {
   const scope = tickets.filter((ticket) => now - new Date(ticket.submissionDate).getTime() <= periods[period]);
   const submitted = scope.length;
   const completed = scope.filter((ticket) => ticket.status === "виконано").length;
+  const queued = scope.filter((ticket) => ticket.status !== "виконано").length;
 
   const byExecutor = scope
     .filter((ticket) => ticket.status === "виконано" && ticket.executor)
@@ -212,7 +213,7 @@ const computeStats = (tickets, period) => {
       return acc;
     }, {});
 
-  return { submitted, completed, byExecutor };
+  return { submitted, completed, queued, byExecutor };
 };
 
 const renderStats = () => {
@@ -238,6 +239,7 @@ const renderStats = () => {
     <div class="stats-summary">
       <div><span>Подано заявок</span><strong>${stats.submitted}</strong></div>
       <div><span>Виконано заявок</span><strong>${stats.completed}</strong></div>
+      <div><span>В черзі</span><strong>${stats.queued}</strong></div>
       <div><span>Відсоток виконання</span><strong>${stats.submitted ? Math.round((stats.completed / stats.submitted) * 100) : 0}%</strong></div>
     </div>
     <h3>Розподіл виконання між виконавцями</h3>

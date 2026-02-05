@@ -66,13 +66,11 @@ const renderConfirmation = (ticket) => {
 
 const getUserStatusClass = (ticket) => {
   if (ticket.status === "виконано") return "user-status-done";
-  if (ticket.isOverdue) return "user-status-overdue";
   return "user-status-queue";
 };
 
 const getUserStatusLabel = (ticket) => {
   if (ticket.status === "виконано") return "Виконано";
-  if (ticket.isOverdue) return "В черзі понад 2 дні";
   return "В черзі";
 };
 

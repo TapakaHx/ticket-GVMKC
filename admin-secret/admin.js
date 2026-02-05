@@ -13,8 +13,9 @@ const soundToggle = document.getElementById("sound-toggle");
 const statsToggle = document.getElementById("stats-toggle");
 const editorDrawer = document.getElementById("editor-drawer");
 const closeEditorButton = document.getElementById("close-editor");
-const showQueuedCheckbox = document.getElementById("show-queued");
-const showCompletedCheckbox = document.getElementById("show-completed");
+const filterAllButton = document.getElementById("filter-all");
+const filterQueuedButton = document.getElementById("filter-queued");
+const filterCompletedButton = document.getElementById("filter-completed");
 const statsModal = document.getElementById("stats-modal");
 const closeStatsButton = document.getElementById("close-stats");
 const statsPeriod = document.getElementById("stats-period");
@@ -23,6 +24,7 @@ const statsContent = document.getElementById("stats-content");
 let lastTicketCount = 0;
 let soundEnabled = false;
 let audioContext;
+let activeFilter = "all";
 
 const getTickets = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 const saveTickets = (tickets) => localStorage.setItem(STORAGE_KEY, JSON.stringify(tickets));
@@ -58,10 +60,25 @@ const syncTickets = () => {
 const getVisibleTickets = (tickets) => {
   return tickets.filter((ticket) => {
     const isCompleted = ticket.status === "виконано";
-    if (isCompleted && !showCompletedCheckbox.checked) return false;
-    if (!isCompleted && !showQueuedCheckbox.checked) return false;
+    if (activeFilter === "queued" && isCompleted) return false;
+    if (activeFilter === "completed" && !isCompleted) return false;
     return true;
   });
+};
+
+const setActiveFilterButton = () => {
+  const map = {
+    all: filterAllButton,
+    queued: filterQueuedButton,
+    completed: filterCompletedButton,
+  };
+
+  [filterAllButton, filterQueuedButton, filterCompletedButton].forEach((button) => {
+    if (!button) return;
+    button.classList.remove("is-active");
+  });
+
+  map[activeFilter]?.classList.add("is-active");
 };
 
 const statusClass = (ticket) => {
@@ -233,8 +250,23 @@ closeStatsButton.addEventListener("click", () => {
 });
 statsPeriod.addEventListener("change", renderStats);
 
-showQueuedCheckbox.addEventListener("change", refresh);
-showCompletedCheckbox.addEventListener("change", refresh);
+filterAllButton.addEventListener("click", () => {
+  activeFilter = "all";
+  setActiveFilterButton();
+  refresh();
+});
+
+filterQueuedButton.addEventListener("click", () => {
+  activeFilter = "queued";
+  setActiveFilterButton();
+  refresh();
+});
+
+filterCompletedButton.addEventListener("click", () => {
+  activeFilter = "completed";
+  setActiveFilterButton();
+  refresh();
+});
 
 editForm.status.addEventListener("change", (event) => {
   toggleDoneFields(event.target.value);
@@ -300,5 +332,6 @@ closeEditorButton.addEventListener("click", () => {
 ensureAuth();
 editorDrawer.hidden = true;
 statsModal.hidden = true;
+setActiveFilterButton();
 refresh();
 setInterval(refresh, 4000);

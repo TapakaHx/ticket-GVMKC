@@ -24,9 +24,10 @@
       <section class="admin-grid">
         <div class="admin-list full-width">
           <h2>Список заявок</h2>
-          <div class="filters">
-            <label><input id="show-queued" type="checkbox" checked /> Показувати в черзі</label>
-            <label><input id="show-completed" type="checkbox" /> Показувати виконані</label>
+          <div class="filters" role="group" aria-label="Фільтри заявок">
+            <button id="filter-all" class="secondary is-active" type="button">Всі заявки</button>
+            <button id="filter-queued" class="secondary" type="button">В черзі</button>
+            <button id="filter-completed" class="secondary" type="button">Виконані</button>
           </div>
           <div id="ticket-list" class="ticket-list"></div>
         </div>

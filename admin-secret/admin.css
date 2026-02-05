@@ -201,3 +201,10 @@ body {
     justify-content: flex-start;
   }
 }
+
+
+.filters .secondary.is-active {
+  background: #1f7a58;
+  color: #ffffff;
+  border-color: #1f7a58;
+}

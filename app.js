@@ -28,7 +28,7 @@ const formatDate = (value) =>
 const createTicket = (data) => ({
   id: crypto.randomUUID(),
   queueNumber: getNextQueueNumber(),
-  status: "queue",
+  status: "в черзі",
   submissionDate: new Date().toISOString(),
   completionDate: null,
   executor: null,
@@ -56,7 +56,7 @@ const renderTicketDetails = (ticket) => {
     </header>
     <div class="details-grid">
       <div>
-        <strong>Категорія</strong>
+        <strong>Категорія проблеми</strong>
         <p>${ticket.category}</p>
       </div>
       <div>

@@ -19,7 +19,7 @@ let audioContext;
 const getTickets = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 const saveTickets = (tickets) => localStorage.setItem(STORAGE_KEY, JSON.stringify(tickets));
 
-const formatStatus = (status) => (status === "in progress" ? "in progress" : status);
+const formatStatus = (status) => status;
 const formatDateTime = (value) =>
   new Date(value).toLocaleString("uk-UA", { timeZone: "Europe/Kyiv" });
 
@@ -34,8 +34,8 @@ const renderTicketList = (tickets) => {
       <div class="ticket-card" data-id="${ticket.id}">
         <h3>№${ticket.queueNumber} · ${ticket.fullName}</h3>
         <div class="ticket-meta">
-          <span>Статус: ${formatStatus(ticket.status)}</span>
-          <span>Категорія: ${ticket.category}</span>
+          <span>Статус заявки: ${formatStatus(ticket.status)}</span>
+          <span>Категорія проблеми: ${ticket.category}</span>
         </div>
         <div class="ticket-meta">
           <span>Подача: ${formatDateTime(ticket.submissionDate)}</span>
@@ -67,7 +67,7 @@ const populateForm = (ticket) => {
 };
 
 const toggleDoneFields = (status) => {
-  if (status === "done") {
+  if (status === "виконано") {
     doneFields.hidden = false;
   } else {
     doneFields.hidden = true;
@@ -150,7 +150,7 @@ editForm.addEventListener("submit", (event) => {
   const index = tickets.findIndex((ticket) => ticket.id === data.id);
   if (index === -1) return;
 
-  if (data.status === "done") {
+  if (data.status === "виконано") {
     if (!data.executor) {
       alert("Для завершення потрібен виконавець.");
       return;
@@ -164,9 +164,9 @@ editForm.addEventListener("submit", (event) => {
     category: data.category,
     description: data.description,
     status: data.status,
-    executor: data.status === "done" ? data.executor : null,
+    executor: data.status === "виконано" ? data.executor : null,
     completionDate:
-      data.status === "done" ? tickets[index].completionDate || new Date().toISOString() : null,
+      data.status === "виконано" ? tickets[index].completionDate || new Date().toISOString() : null,
   };
 
   saveTickets(tickets);

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Підтримка | Технічна підтримка ГВМКЦ</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header class="hero minimal-hero">
+      <nav class="nav">
+        <button class="admin-link" id="admin-login" type="button">Адмін-панель</button>
+      </nav>
+      <div class="hero-content single-column">
+        <h1 class="main-title">Сайт подачі заявок до технічної підтримки ГВМКЦ ДПСУ</h1>
+        <div class="hero-actions">
+          <button class="primary" id="open-submit" type="button">Подати заявку</button>
+          <button class="secondary" id="open-lookup" type="button">Переглянути заявки</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="main">
+      <section id="submit-panel" class="panel" hidden>
+        <h2>Надіслати заявку</h2>
+        <form id="ticket-form" class="ticket-form">
+          <label>
+            Повне імʼя
+            <input name="fullName" type="text" required placeholder="Імʼя та прізвище" />
+          </label>
+          <label>
+            Службовий номер
+            <input
+              name="serviceNumber"
+              type="text"
+              required
+              placeholder="Ваш службовий номер у форматі 77-22"
+            />
+          </label>
+          <label>
+            Категорія
+            <select name="category" required>
+              <option value="" disabled selected>Оберіть категорію</option>
+              <option>Компʼютери та ноутбуки</option>
+              <option>Принтери та МФУ</option>
+              <option>Мережа та Wi‑Fi</option>
+              <option>Телефонія</option>
+            </select>
+          </label>
+          <label>
+            Опис проблеми
+            <textarea
+              name="description"
+              rows="4"
+              required
+              placeholder="Опишіть проблему максимально детально"
+            ></textarea>
+          </label>
+          <button type="submit" class="primary">Відправити</button>
+        </form>
+        <div id="confirmation" class="confirmation" hidden></div>
+      </section>
+
+      <section id="lookup-panel" class="panel" hidden>
+        <h2>Черга заявок за останні 7 днів</h2>
+        <div id="public-queue" class="public-queue"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>
+        Технічна підтримка ГВМКЦ ДПСУ · Прийом та виконання заявок здійснюється з 08:00 до
+        17:00 у робочі дні (понеділок–пʼятниця). Для подання пропозицій щодо покращення сервісу
+        та повідомлень про виявлені технічні несправності (зокрема некоректну роботу кнопок чи
+        інших елементів) просимо звертатися до вузла звʼязку: Чопов Володимир, службовий номер
+        77-22
+      </p>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>

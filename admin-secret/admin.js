@@ -234,12 +234,14 @@ const renderStats = () => {
     .join("");
 
   statsContent.innerHTML = `
+    <div class="stats-headline">Аналітика виконання заявок за обраний період</div>
     <div class="stats-summary">
-      <div><span>Подано</span><strong>${stats.submitted}</strong></div>
-      <div><span>Зроблено</span><strong>${stats.completed}</strong></div>
+      <div><span>Подано заявок</span><strong>${stats.submitted}</strong></div>
+      <div><span>Виконано заявок</span><strong>${stats.completed}</strong></div>
+      <div><span>Відсоток виконання</span><strong>${stats.submitted ? Math.round((stats.completed / stats.submitted) * 100) : 0}%</strong></div>
     </div>
-    <h3>Хто скільки виконав</h3>
-    ${executors.length ? `<div class="stats-bars">${bars}</div>` : "<p>За обраний період виконаних заявок немає.</p>"}
+    <h3>Розподіл виконання між виконавцями</h3>
+    ${executors.length ? `<div class="stats-bars">${bars}</div>` : "<p>За обраний період виконаних заявок не зафіксовано.</p>"}
   `;
 };
 

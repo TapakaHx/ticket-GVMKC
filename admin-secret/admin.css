@@ -271,3 +271,23 @@ body {
   border-radius: 999px;
   background: linear-gradient(90deg, #1f7a58, #2bb673);
 }
+
+
+.stats-headline {
+  background: linear-gradient(135deg, #e8f6ef, #d8efe3);
+  border: 1px solid #b7ddc7;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-weight: 700;
+  color: #14532d;
+}
+
+.stats-content h3 {
+  margin-top: 4px;
+  margin-bottom: 2px;
+  color: #0f172a;
+}
+
+.stats-summary strong {
+  font-size: 1.25rem;
+}

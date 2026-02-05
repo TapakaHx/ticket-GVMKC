@@ -1,17 +1,17 @@
 const ticketForm = document.getElementById("ticket-form");
 const confirmation = document.getElementById("confirmation");
-const tokenForm = document.getElementById("token-form");
-const ticketDetails = document.getElementById("ticket-details");
 const adminLoginButton = document.getElementById("admin-login");
 const submitPanel = document.getElementById("submit-panel");
 const lookupPanel = document.getElementById("lookup-panel");
 const openSubmitButton = document.getElementById("open-submit");
 const openLookupButton = document.getElementById("open-lookup");
+const publicQueue = document.getElementById("public-queue");
 
 const STORAGE_KEY = "greensupport.tickets";
 const QUEUE_KEY = "greensupport.queue";
 const PASSWORD_KEY = "greensupport.admin.auth";
 const ADMIN_PASSWORD = "X123456x";
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 const getTickets = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 const saveTickets = (tickets) => localStorage.setItem(STORAGE_KEY, JSON.stringify(tickets));
@@ -35,7 +35,7 @@ const getRequesterInfo = async () => {
       requesterIp = payload.ip || requesterIp;
     }
   } catch {
-    // Ignore network issues; keep fallback value.
+    // ignore
   }
 
   const requesterHost = window.location.hostname || "Невідомо";
@@ -59,57 +59,34 @@ const renderConfirmation = (ticket) => {
   confirmation.hidden = false;
   confirmation.innerHTML = `
     <strong>Заявку прийнято!</strong><br />
-    Ваш номер черги: <strong>${ticket.queueNumber}</strong><br />
-    Використовуйте номер черги для керування заявкою.
+    Ваша заявка під номером: <strong>${ticket.queueNumber}</strong><br />
+    Для перевірки використовуйте список заявок за останні 7 днів.
   `;
 };
 
-const renderTicketDetails = (ticket) => {
-  ticketDetails.hidden = false;
-  ticketDetails.innerHTML = `
-    <header>
-      <div>
+const renderPublicQueue = () => {
+  const now = Date.now();
+  const weeklyTickets = getTickets()
+    .filter((ticket) => now - new Date(ticket.submissionDate).getTime() <= WEEK_MS)
+    .sort((a, b) => a.queueNumber - b.queueNumber);
+
+  if (weeklyTickets.length === 0) {
+    publicQueue.innerHTML = "<p>За останні 7 днів заявок не зареєстровано.</p>";
+    return;
+  }
+
+  publicQueue.innerHTML = weeklyTickets
+    .map(
+      (ticket) => `
+      <article class="queue-card">
         <h3>Заявка №${ticket.queueNumber}</h3>
-        <p>${ticket.fullName} · ${ticket.serviceNumber}</p>
-      </div>
-      <span class="status-pill">${ticket.status}</span>
-    </header>
-    <div class="details-grid">
-      <div>
-        <strong>Категорія проблеми</strong>
-        <p>${ticket.category}</p>
-      </div>
-      <div>
-        <strong>Опис</strong>
-        <p>${ticket.description}</p>
-      </div>
-      <div>
-        <strong>Дата подачі</strong>
-        <p>${formatDate(ticket.submissionDate)}</p>
-      </div>
-      ${
-        ticket.completionDate
-          ? `
-      <div>
-        <strong>Дата завершення</strong>
-        <p>${formatDate(ticket.completionDate)}</p>
-      </div>
-      <div>
-        <strong>Виконавець</strong>
-        <p>${ticket.executor || "—"}</p>
-      </div>`
-          : ""
-      }
-    </div>
-  `;
-};
-
-const showTicketNotFound = () => {
-  ticketDetails.hidden = false;
-  ticketDetails.innerHTML = `
-    <header><h3>Заявку не знайдено</h3></header>
-    <p>Перевірте номер черги або зверніться до адміністратора.</p>
-  `;
+        <p><strong>Статус:</strong> ${ticket.status}</p>
+        <p><strong>Категорія:</strong> ${ticket.category}</p>
+        <p><strong>Подано:</strong> ${formatDate(ticket.submissionDate)}</p>
+      </article>
+    `
+    )
+    .join("");
 };
 
 ticketForm.addEventListener("submit", async (event) => {
@@ -123,18 +100,7 @@ ticketForm.addEventListener("submit", async (event) => {
   saveTickets(tickets);
   ticketForm.reset();
   renderConfirmation(ticket);
-});
-
-tokenForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const queueNumber = new FormData(tokenForm).get("queueNumber").trim();
-  const tickets = getTickets();
-  const ticket = tickets.find((item) => String(item.queueNumber) === queueNumber);
-  if (!ticket) {
-    showTicketNotFound();
-    return;
-  }
-  renderTicketDetails(ticket);
+  renderPublicQueue();
 });
 
 if (adminLoginButton) {
@@ -153,6 +119,9 @@ if (adminLoginButton) {
 const showPanel = (panelToShow) => {
   if (submitPanel) submitPanel.hidden = panelToShow !== "submit";
   if (lookupPanel) lookupPanel.hidden = panelToShow !== "lookup";
+  if (panelToShow === "lookup") {
+    renderPublicQueue();
+  }
 };
 
 if (openSubmitButton) {

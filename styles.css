@@ -194,6 +194,22 @@ button:hover {
   padding: 60px 8vw 80px;
 }
 
+
+.public-queue {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.queue-card {
+  background: var(--warm-cream);
+  border: 1px solid #e5d5bf;
+  border-radius: 14px;
+  padding: 14px;
+  display: grid;
+  gap: 6px;
+}
+
 .ticket-details {
   margin-top: 30px;
   background: var(--white);

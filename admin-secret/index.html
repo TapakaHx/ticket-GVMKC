@@ -16,13 +16,18 @@
         </div>
         <div class="admin-actions">
           <button id="sound-toggle" class="secondary">Увімкнути звук</button>
-          <a class="secondary" href="/">На головну</a>
+          <button id="stats-toggle" class="secondary" type="button">Статистика</button>
+          <a class="secondary button-link" href="../">На головну</a>
         </div>
       </header>
 
       <section class="admin-grid">
         <div class="admin-list full-width">
           <h2>Список заявок</h2>
+          <div class="filters">
+            <label><input id="show-queued" type="checkbox" checked /> Показувати в черзі</label>
+            <label><input id="show-completed" type="checkbox" /> Показувати виконані</label>
+          </div>
           <div id="ticket-list" class="ticket-list"></div>
         </div>
       </section>
@@ -76,7 +81,6 @@
             Статус заявки
             <select name="status" required>
               <option value="в черзі">в черзі</option>
-              <option value="в роботі">в роботі</option>
               <option value="виконано">виконано</option>
             </select>
           </label>
@@ -95,6 +99,25 @@
           </div>
           <button type="submit" class="primary">Зберегти</button>
         </form>
+      </div>
+    </div>
+
+    <div id="stats-modal" class="editor-drawer" hidden>
+      <div class="editor-card">
+        <div class="editor-header">
+          <h2>Статистика</h2>
+          <button id="close-stats" class="secondary" type="button">Закрити</button>
+        </div>
+        <label>
+          Період
+          <select id="stats-period">
+            <option value="day">За день</option>
+            <option value="week" selected>За тиждень</option>
+            <option value="month">За місяць</option>
+            <option value="year">За рік</option>
+          </select>
+        </label>
+        <div id="stats-content" class="stats-content"></div>
       </div>
     </div>
 

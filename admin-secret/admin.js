@@ -10,8 +10,15 @@ const passwordOverlay = document.getElementById("password-overlay");
 const passwordForm = document.getElementById("password-form");
 const passwordError = document.getElementById("password-error");
 const soundToggle = document.getElementById("sound-toggle");
+const statsToggle = document.getElementById("stats-toggle");
 const editorDrawer = document.getElementById("editor-drawer");
 const closeEditorButton = document.getElementById("close-editor");
+const showQueuedCheckbox = document.getElementById("show-queued");
+const showCompletedCheckbox = document.getElementById("show-completed");
+const statsModal = document.getElementById("stats-modal");
+const closeStatsButton = document.getElementById("close-stats");
+const statsPeriod = document.getElementById("stats-period");
+const statsContent = document.getElementById("stats-content");
 
 let lastTicketCount = 0;
 let soundEnabled = false;
@@ -25,37 +32,18 @@ const formatDateTime = (value) =>
 
 const applyQueueRules = (tickets) => {
   const now = Date.now();
-  let changed = false;
 
   const normalized = tickets.map((ticket) => {
     const isPending = ticket.status !== "виконано";
     const isOverdue = isPending && now - new Date(ticket.submissionDate).getTime() > OVERDUE_MS;
-
-    if (ticket.isOverdue !== isOverdue) {
-      changed = true;
-    }
-
-    return {
-      ...ticket,
-      isOverdue,
-    };
+    return { ...ticket, isOverdue };
   });
 
-  const sorted = [...normalized].sort((a, b) => {
+  return [...normalized].sort((a, b) => {
     if (a.isOverdue && !b.isOverdue) return -1;
     if (!a.isOverdue && b.isOverdue) return 1;
     return a.queueNumber - b.queueNumber;
   });
-
-  if (
-    !changed &&
-    sorted.length === tickets.length &&
-    sorted.every((item, index) => item.id === tickets[index]?.id)
-  ) {
-    return tickets;
-  }
-
-  return sorted;
 };
 
 const syncTickets = () => {
@@ -67,33 +55,50 @@ const syncTickets = () => {
   return updated;
 };
 
+const getVisibleTickets = (tickets) => {
+  return tickets.filter((ticket) => {
+    const isCompleted = ticket.status === "виконано";
+    if (isCompleted && !showCompletedCheckbox.checked) return false;
+    if (!isCompleted && !showQueuedCheckbox.checked) return false;
+    return true;
+  });
+};
+
+const statusClass = (ticket) => {
+  if (ticket.status === "виконано") return "status-done";
+  if (ticket.isOverdue) return "status-overdue";
+  return "status-queue";
+};
+
+const statusLabel = (ticket) => {
+  if (ticket.status === "виконано") return "Виконано";
+  if (ticket.isOverdue) return "В черзі понад 2 дні";
+  return "В черзі";
+};
+
 const renderTicketList = (tickets) => {
-  if (tickets.length === 0) {
-    ticketList.innerHTML = "<p>Наразі заявок немає.</p>";
+  const visible = getVisibleTickets(tickets);
+  if (visible.length === 0) {
+    ticketList.innerHTML = "<p>Немає заявок за обраним фільтром.</p>";
     return;
   }
 
-  ticketList.innerHTML = tickets
+  ticketList.innerHTML = visible
     .map(
       (ticket) => `
-      <div class="ticket-card ${ticket.isOverdue ? "overdue" : ""}" data-id="${ticket.id}">
-        <h3>№${ticket.queueNumber} · ${ticket.fullName}</h3>
-        <div class="ticket-meta">
-          <span>Статус заявки: ${ticket.status}</span>
-          <span>Категорія проблеми: ${ticket.category}</span>
-        </div>
-        <div class="ticket-meta">
-          <span>Подача: ${formatDateTime(ticket.submissionDate)}</span>
-          ${ticket.isOverdue ? '<span class="overdue-badge">Пріоритет: 2+ дні</span>' : ""}
-        </div>
-        <p>${ticket.description}</p>
-        <div class="ticket-actions">
-          <button class="secondary" type="button" data-action="edit" data-id="${ticket.id}">
-            Редагувати
-          </button>
-          <button class="secondary" type="button" data-action="delete" data-id="${ticket.id}">
-            Видалити
-          </button>
+      <div class="ticket-card ${statusClass(ticket)}" data-id="${ticket.id}">
+        <div class="ticket-status-left">${statusLabel(ticket)}</div>
+        <div class="ticket-main">
+          <h3>№${ticket.queueNumber} · ${ticket.fullName}</h3>
+          <div class="ticket-meta">
+            <span>Категорія проблеми: ${ticket.category}</span>
+            <span>Подача: ${formatDateTime(ticket.submissionDate)}</span>
+          </div>
+          <p>${ticket.description}</p>
+          <div class="ticket-actions">
+            <button class="secondary" type="button" data-action="edit" data-id="${ticket.id}">Редагувати</button>
+            <button class="secondary" type="button" data-action="delete" data-id="${ticket.id}">Видалити</button>
+          </div>
         </div>
       </div>
     `
@@ -127,11 +132,9 @@ const toggleDoneFields = (status) => {
 const showPasswordOverlay = () => {
   passwordOverlay.style.display = "flex";
 };
-
 const hidePasswordOverlay = () => {
   passwordOverlay.style.display = "none";
 };
-
 const ensureAuth = () => {
   if (sessionStorage.getItem(PASSWORD_KEY) === "true") {
     hidePasswordOverlay();
@@ -156,12 +159,50 @@ const playBeep = () => {
   setTimeout(() => oscillator.stop(), 260);
 };
 
-const pollTickets = () => {
+const computeStats = (tickets, period) => {
+  const now = Date.now();
+  const periods = {
+    day: 24 * 60 * 60 * 1000,
+    week: 7 * 24 * 60 * 60 * 1000,
+    month: 30 * 24 * 60 * 60 * 1000,
+    year: 365 * 24 * 60 * 60 * 1000,
+  };
+
+  const scope = tickets.filter((ticket) => now - new Date(ticket.submissionDate).getTime() <= periods[period]);
+  const submitted = scope.length;
+  const completed = scope.filter((ticket) => ticket.status === "виконано").length;
+
+  const byExecutor = scope
+    .filter((ticket) => ticket.status === "виконано" && ticket.executor)
+    .reduce((acc, ticket) => {
+      acc[ticket.executor] = (acc[ticket.executor] || 0) + 1;
+      return acc;
+    }, {});
+
+  return { submitted, completed, byExecutor };
+};
+
+const renderStats = () => {
+  const tickets = syncTickets();
+  const stats = computeStats(tickets, statsPeriod.value);
+  const executors = Object.entries(stats.byExecutor);
+
+  statsContent.innerHTML = `
+    <p><strong>Подано:</strong> ${stats.submitted}</p>
+    <p><strong>Зроблено:</strong> ${stats.completed}</p>
+    <h3>Хто скільки виконав</h3>
+    ${
+      executors.length
+        ? `<ul>${executors.map(([name, count]) => `<li>${name}: ${count}</li>`).join("")}</ul>`
+        : "<p>За обраний період виконаних заявок немає.</p>"
+    }
+  `;
+};
+
+const refresh = () => {
   const tickets = syncTickets();
   renderTicketList(tickets);
-  if (tickets.length > lastTicketCount) {
-    playBeep();
-  }
+  if (tickets.length > lastTicketCount) playBeep();
   lastTicketCount = tickets.length;
 };
 
@@ -183,14 +224,25 @@ soundToggle.addEventListener("click", () => {
   if (soundEnabled) playBeep();
 });
 
+statsToggle.addEventListener("click", () => {
+  statsModal.hidden = false;
+  renderStats();
+});
+closeStatsButton.addEventListener("click", () => {
+  statsModal.hidden = true;
+});
+statsPeriod.addEventListener("change", renderStats);
+
+showQueuedCheckbox.addEventListener("change", refresh);
+showCompletedCheckbox.addEventListener("change", refresh);
+
 editForm.status.addEventListener("change", (event) => {
   toggleDoneFields(event.target.value);
 });
 
 editForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  const formData = new FormData(editForm);
-  const data = Object.fromEntries(formData.entries());
+  const data = Object.fromEntries(new FormData(editForm).entries());
   const tickets = syncTickets();
   const index = tickets.findIndex((ticket) => ticket.id === data.id);
   if (index === -1) return;
@@ -208,29 +260,18 @@ editForm.addEventListener("submit", (event) => {
     description: data.description,
     status: data.status,
     executor: data.status === "виконано" ? data.executor : null,
-    completionDate:
-      data.status === "виконано" ? tickets[index].completionDate || new Date().toISOString() : null,
+    completionDate: data.status === "виконано" ? tickets[index].completionDate || new Date().toISOString() : null,
     isOverdue: false,
   };
 
-  const updated = applyQueueRules(tickets);
-  saveTickets(updated);
-  renderTicketList(updated);
-  hideEditor();
-});
-
-const showEditor = () => {
-  editorDrawer.hidden = false;
-};
-
-const hideEditor = () => {
+  saveTickets(applyQueueRules(tickets));
+  refresh();
   editorDrawer.hidden = true;
-};
+});
 
 ticketList.addEventListener("click", (event) => {
   const target = event.target;
   if (!(target instanceof HTMLElement)) return;
-
   const action = target.dataset.action;
   const id = target.dataset.id;
   if (!action || !id) return;
@@ -241,26 +282,23 @@ ticketList.addEventListener("click", (event) => {
 
   if (action === "edit") {
     populateForm(ticket);
-    showEditor();
+    editorDrawer.hidden = false;
     return;
   }
 
   if (action === "delete") {
-    const confirmed = window.confirm("Видалити цю заявку?");
-    if (!confirmed) return;
-    const updated = tickets.filter((item) => item.id !== id);
-    saveTickets(updated);
-    renderTicketList(updated);
+    if (!window.confirm("Видалити цю заявку?")) return;
+    saveTickets(tickets.filter((item) => item.id !== id));
+    refresh();
   }
 });
 
-if (closeEditorButton) {
-  closeEditorButton.addEventListener("click", hideEditor);
-}
+closeEditorButton.addEventListener("click", () => {
+  editorDrawer.hidden = true;
+});
 
 ensureAuth();
-const initialTickets = syncTickets();
-lastTicketCount = initialTickets.length;
-renderTicketList(initialTickets);
-hideEditor();
-setInterval(pollTickets, 4000);
+editorDrawer.hidden = true;
+statsModal.hidden = true;
+refresh();
+setInterval(refresh, 4000);

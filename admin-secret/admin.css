@@ -208,3 +208,15 @@ body {
   color: #ffffff;
   border-color: #1f7a58;
 }
+
+
+.search-label {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+  max-width: 420px;
+}
+
+.search-label input {
+  background: #fffaf2;
+}

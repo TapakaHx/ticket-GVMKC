@@ -210,6 +210,23 @@ button:hover {
   gap: 6px;
 }
 
+
+.queue-card.user-status-done {
+  border-left: 6px solid #16a34a;
+}
+
+.queue-card.user-status-queue {
+  border-left: 6px solid #ca8a04;
+}
+
+.queue-card.user-status-overdue {
+  border-left: 6px solid #dc2626;
+}
+
+.queue-status {
+  font-weight: 700;
+}
+
 .ticket-details {
   margin-top: 30px;
   background: var(--white);

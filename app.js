@@ -64,6 +64,18 @@ const renderConfirmation = (ticket) => {
   `;
 };
 
+const getUserStatusClass = (ticket) => {
+  if (ticket.status === "виконано") return "user-status-done";
+  if (ticket.isOverdue) return "user-status-overdue";
+  return "user-status-queue";
+};
+
+const getUserStatusLabel = (ticket) => {
+  if (ticket.status === "виконано") return "Виконано";
+  if (ticket.isOverdue) return "В черзі понад 2 дні";
+  return "В черзі";
+};
+
 const renderPublicQueue = () => {
   const now = Date.now();
   const weeklyTickets = getTickets()
@@ -78,9 +90,9 @@ const renderPublicQueue = () => {
   publicQueue.innerHTML = weeklyTickets
     .map(
       (ticket) => `
-      <article class="queue-card">
+      <article class="queue-card ${getUserStatusClass(ticket)}">
         <h3>Заявка №${ticket.queueNumber}</h3>
-        <p><strong>Статус:</strong> ${ticket.status}</p>
+        <p class="queue-status"><strong>Статус:</strong> ${getUserStatusLabel(ticket)}</p>
         <p><strong>Категорія:</strong> ${ticket.category}</p>
         <p><strong>Подано:</strong> ${formatDate(ticket.submissionDate)}</p>
       </article>

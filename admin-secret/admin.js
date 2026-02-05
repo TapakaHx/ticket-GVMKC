@@ -20,11 +20,13 @@ const statsModal = document.getElementById("stats-modal");
 const closeStatsButton = document.getElementById("close-stats");
 const statsPeriod = document.getElementById("stats-period");
 const statsContent = document.getElementById("stats-content");
+const ticketSearch = document.getElementById("ticket-search");
 
 let lastTicketCount = 0;
 let soundEnabled = false;
 let audioContext;
 let activeFilter = "all";
+let searchQuery = "";
 
 const getTickets = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 const saveTickets = (tickets) => localStorage.setItem(STORAGE_KEY, JSON.stringify(tickets));
@@ -62,7 +64,20 @@ const getVisibleTickets = (tickets) => {
     const isCompleted = ticket.status === "виконано";
     if (activeFilter === "queued" && isCompleted) return false;
     if (activeFilter === "completed" && !isCompleted) return false;
-    return true;
+
+    if (!searchQuery) return true;
+
+    const haystack = [
+      String(ticket.queueNumber),
+      ticket.fullName,
+      ticket.serviceNumber,
+      ticket.category,
+      ticket.description,
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    return haystack.includes(searchQuery);
   });
 };
 
@@ -267,6 +282,13 @@ filterCompletedButton.addEventListener("click", () => {
   setActiveFilterButton();
   refresh();
 });
+
+if (ticketSearch) {
+  ticketSearch.addEventListener("input", (event) => {
+    searchQuery = event.target.value.trim().toLowerCase();
+    refresh();
+  });
+}
 
 editForm.status.addEventListener("change", (event) => {
   toggleDoneFields(event.target.value);

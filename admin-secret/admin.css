@@ -220,3 +220,54 @@ body {
 .search-label input {
   background: #fffaf2;
 }
+
+
+.admin-footer {
+  padding: 10px 8vw 40px;
+}
+
+.stats-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.stats-summary div {
+  background: #fffaf2;
+  border: 1px solid #e5d5bf;
+  border-radius: 10px;
+  padding: 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.stats-bars {
+  display: grid;
+  gap: 10px;
+}
+
+.stat-row {
+  display: grid;
+  gap: 6px;
+}
+
+.stat-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.95rem;
+}
+
+.stat-bar-track {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: #eadbc6;
+  overflow: hidden;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1f7a58, #2bb673);
+}

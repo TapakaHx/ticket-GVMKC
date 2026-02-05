@@ -21,6 +21,7 @@ const closeStatsButton = document.getElementById("close-stats");
 const statsPeriod = document.getElementById("stats-period");
 const statsContent = document.getElementById("stats-content");
 const ticketSearch = document.getElementById("ticket-search");
+const goHomeButton = document.getElementById("go-home");
 
 let lastTicketCount = 0;
 let soundEnabled = false;
@@ -217,17 +218,28 @@ const computeStats = (tickets, period) => {
 const renderStats = () => {
   const tickets = syncTickets();
   const stats = computeStats(tickets, statsPeriod.value);
-  const executors = Object.entries(stats.byExecutor);
+  const executors = Object.entries(stats.byExecutor).sort((a, b) => b[1] - a[1]);
+  const max = Math.max(...executors.map(([, count]) => count), 1);
+
+  const bars = executors
+    .map(([name, count]) => {
+      const width = Math.round((count / max) * 100);
+      return `
+        <div class="stat-row">
+          <div class="stat-head"><span>${name}</span><strong>${count}</strong></div>
+          <div class="stat-bar-track"><div class="stat-bar-fill" style="width:${width}%"></div></div>
+        </div>
+      `;
+    })
+    .join("");
 
   statsContent.innerHTML = `
-    <p><strong>Подано:</strong> ${stats.submitted}</p>
-    <p><strong>Зроблено:</strong> ${stats.completed}</p>
+    <div class="stats-summary">
+      <div><span>Подано</span><strong>${stats.submitted}</strong></div>
+      <div><span>Зроблено</span><strong>${stats.completed}</strong></div>
+    </div>
     <h3>Хто скільки виконав</h3>
-    ${
-      executors.length
-        ? `<ul>${executors.map(([name, count]) => `<li>${name}: ${count}</li>`).join("")}</ul>`
-        : "<p>За обраний період виконаних заявок немає.</p>"
-    }
+    ${executors.length ? `<div class="stats-bars">${bars}</div>` : "<p>За обраний період виконаних заявок немає.</p>"}
   `;
 };
 
@@ -249,6 +261,12 @@ passwordForm.addEventListener("submit", (event) => {
     passwordError.hidden = false;
   }
 });
+
+if (goHomeButton) {
+  goHomeButton.addEventListener("click", () => {
+    window.location.href = "../";
+  });
+}
 
 soundToggle.addEventListener("click", () => {
   soundEnabled = !soundEnabled;
